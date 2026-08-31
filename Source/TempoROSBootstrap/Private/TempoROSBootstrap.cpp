@@ -12,9 +12,29 @@ FString GetTempoROSDllDirectory()
 	return FPaths::Combine(TempoROSPluginPath, TEXT("Source"), TEXT("ThirdParty"), TEXT("rclcpp"), TEXT("Binaries"), TEXT("Windows"));
 }
 
+#if PLATFORM_WINDOWS
+FString GetEngineOpenSSLDllDirectory()
+{
+	return FPaths::Combine(
+		FPaths::EngineDir(),
+		TEXT("Extras"),
+		TEXT("ThirdPartyNotUE"),
+		TEXT("libimobiledevice"),
+		TEXT("x64"));
+}
+#endif
+
 void FTempoROSBootstrapModule::StartupModule()
 {
 #if PLATFORM_WINDOWS
+	const FString OpenSSLDllDirectory = GetEngineOpenSSLDllDirectory();
+	if (FPaths::DirectoryExists(OpenSSLDllDirectory))
+	{
+		const FString CurrentPath = FPlatformMisc::GetEnvironmentVariable(TEXT("PATH"));
+		const FString UpdatedPath = FString::Printf(TEXT("%s;%s"), *OpenSSLDllDirectory, *CurrentPath);
+		FPlatformMisc::SetEnvironmentVar(TEXT("PATH"), *UpdatedPath);
+	}
+
 	FPlatformProcess::PushDllDirectory(*GetTempoROSDllDirectory());
 #endif
 }
